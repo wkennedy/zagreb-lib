@@ -1,0 +1,17 @@
+[package]
+name = "zagreb-lib"
+version = "0.1.0"
+edition = "2021"
+authors = ["Will Kennedy"]
+description = "A Rust library for analyzing graph properties using the Zagreb index and Hamiltonian criteria"
+license = "MIT"
+repository = "https://github.com/wkennedy/zagreb-lib"
+keywords = ["graph", "network", "hamiltonian", "zagreb", "topology"]
+categories = ["algorithms", "mathematics", "network-programming"]
+
+[dependencies]
+# Add dependencies as needed
+
+[[example]]
+name = "solana_network"
+path = "examples/solana_network.rs"
