@@ -67,10 +67,16 @@ fn analyze_graph_properties(graph: &Graph) {
     println!("Is likely traceable: {}", graph.is_likely_traceable());
 
     // Calculate independence number approximation
-    println!("\nIndependence number approximation: {}", graph.independence_number_approx());
+    println!(
+        "\nIndependence number approximation: {}",
+        graph.independence_number_approx()
+    );
 
     // Calculate upper bound on Zagreb index
-    println!("Upper bound on Zagreb index: {:.2}", graph.zagreb_upper_bound());
+    println!(
+        "Upper bound on Zagreb index: {:.2}",
+        graph.zagreb_upper_bound()
+    );
 }
 
 /// Test the Zagreb index conditions from the paper
@@ -96,8 +102,12 @@ fn test_zagreb_conditions(graph: &Graph) {
 
     // Check if the Petersen graph meets Dirac's condition
     println!("\nClassical conditions:");
-    println!("Dirac's condition (min degree ≥ n/2): {} ≥ {}? {}",
-             delta, n / 2, delta >= n / 2);
+    println!(
+        "Dirac's condition (min degree ≥ n/2): {} ≥ {}? {}",
+        delta,
+        n / 2,
+        delta >= n / 2
+    );
 }
 
 /// Explain why the Petersen graph is not Hamiltonian
