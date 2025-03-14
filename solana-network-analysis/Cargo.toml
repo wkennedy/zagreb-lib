@@ -1,0 +1,19 @@
+[package]
+name = "solana-network-analysis"
+version = "0.1.0"
+edition = "2021"
+authors = ["Will Kennedy"]
+description = ""
+license = "MIT"
+repository = "https://github.com/wkennedy/zagreb-lib"
+keywords = ["graph", "network", "hamiltonian", "zagreb", "topology"]
+categories = ["algorithms", "mathematics", "network-programming"]
+
+[dependencies]
+zagreb-lib = { path = ".." }
+solana-client = "2.1.15"
+solana-sdk = "2.1.15"
+solana-gossip = "2.1.15"
+solana-streamer = "2.1.15"
+clap = "3.2.25"
+serde_json = "1.0"
