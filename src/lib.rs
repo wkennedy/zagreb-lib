@@ -1,5 +1,5 @@
 // zagreb-lib/src/lib.rs
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 
 /// A graph represented as an adjacency list
 pub struct Graph {
@@ -326,7 +326,7 @@ impl Graph {
     /// Find the maximum number of vertex-disjoint paths between vertices s and t
     /// This uses a more comprehensive algorithm for both adjacent and non-adjacent vertices
     fn find_vertex_disjoint_paths(&self, s: usize, t: usize) -> usize {
-        use std::collections::{HashMap, HashSet, VecDeque};
+        use std::collections::{HashMap, HashSet};
 
         // Handle special cases for common graph types
         // Complete graph with n vertices has n-1 vertex-disjoint paths between any two vertices
