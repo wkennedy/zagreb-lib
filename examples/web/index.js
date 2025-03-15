@@ -237,6 +237,15 @@ function createGraph() {
     const vertices = parseInt(document.getElementById('numVertices').value);
     const p = parseFloat(document.getElementById('gossipP').value || '0.3');
 
+    // For bipartite graph
+    const m = parseInt(document.getElementById('bipartiteM').value || '3');
+    const n = parseInt(document.getElementById('bipartiteN').value || '3');
+
+    // For sharded network
+    const numShards = parseInt(document.getElementById('numShards').value || '3');
+    const intraConnectivity = parseFloat(document.getElementById('intraConnectivity').value || '0.7');
+    const interConnectivity = parseFloat(document.getElementById('interConnectivity').value || '0.2');
+
     let graph;
 
     try {
@@ -268,6 +277,15 @@ function createGraph() {
                 break;
             case 'gossip':
                 graph = createGossipNetwork(vertices, p);
+                break;
+            case 'bipartite':
+                graph = createBipartiteGraph(m, n);
+                break;
+            case 'scale-free':
+                graph = createScaleFreeGraph(vertices);
+                break;
+            case 'sharded':
+                graph = createShardedNetwork(vertices, numShards, intraConnectivity, interConnectivity);
                 break;
             default:
                 // Create custom graph
@@ -465,6 +483,143 @@ function createGraphDataFromScratch(graph) {
                         if (!linkExists) {
                             links.push({ source: coordinator, target: i });
                         }
+                    }
+                }
+            }
+            break;
+
+        case 'bipartite':
+            // Complete bipartite graph Km,n
+            const m = parseInt(document.getElementById('bipartiteM').value || '3');
+            const n = parseInt(document.getElementById('bipartiteN').value || '3');
+
+            // Connect each vertex in set A to each vertex in set B
+            for (let i = 0; i < m; i++) {
+                for (let j = 0; j < n; j++) {
+                    links.push({ source: i, target: m + j });
+                }
+            }
+            break;
+
+        case 'scale-free':
+            // Barabási–Albert scale-free network model
+            // Start with a small connected network (e.g., a triangle)
+            if (nodes.length >= 3) {
+                links.push({ source: 0, target: 1 });
+                links.push({ source: 1, target: 2 });
+                links.push({ source: 2, target: 0 });
+
+                // Preferential attachment process for remaining nodes
+                const m0 = 3; // Number of initial nodes
+                const m = 2;  // Number of edges to add for each new node
+
+                for (let i = m0; i < nodes.length; i++) {
+                    // Create array with degrees for preferential attachment
+                    let degreeSum = 0;
+                    const degrees = [];
+
+                    for (let j = 0; j < i; j++) {
+                        const degree = links.filter(link =>
+                            link.source === j || link.target === j ||
+                            (link.source.id === j) || (link.target.id === j)
+                        ).length;
+                        degrees.push(degree);
+                        degreeSum += degree;
+                    }
+
+                    // Add m edges from new node to existing nodes based on preferential attachment
+                    const connected = new Set();
+                    for (let e = 0; e < Math.min(m, i); e++) {
+                        // Choose a node based on its degree probability
+                        let target;
+                        do {
+                            let rand = Math.random() * degreeSum;
+                            target = 0;
+                            while (rand > 0 && target < i) {
+                                rand -= degrees[target];
+                                if (rand > 0) target++;
+                            }
+                        } while (connected.has(target));
+
+                        connected.add(target);
+                        links.push({ source: i, target: target });
+                    }
+                }
+            }
+            break;
+
+        case 'sharded':
+            // Sharded network with multiple subgraphs and sparse interconnections
+            const numShards = parseInt(document.getElementById('numShards').value || '3');
+            const intraConnectivity = parseFloat(document.getElementById('intraConnectivity').value || '0.7');
+            const interConnectivity = parseFloat(document.getElementById('interConnectivity').value || '0.2');
+
+            if (numShards > 1 && nodes.length >= numShards) {
+                // Determine shard sizes (try to make equal)
+                const shardSizes = [];
+                const baseSize = Math.floor(nodes.length / numShards);
+                let remainder = nodes.length % numShards;
+
+                for (let i = 0; i < numShards; i++) {
+                    shardSizes.push(baseSize + (remainder > 0 ? 1 : 0));
+                    remainder--;
+                }
+
+                // Calculate shard boundaries
+                const shardBoundaries = [];
+                let currentIndex = 0;
+                for (let size of shardSizes) {
+                    shardBoundaries.push({
+                        start: currentIndex,
+                        end: currentIndex + size - 1
+                    });
+                    currentIndex += size;
+                }
+
+                // Create intra-shard connections
+                for (let shard of shardBoundaries) {
+                    // Connect each shard internally (densely)
+                    for (let i = shard.start; i <= shard.end; i++) {
+                        for (let j = i + 1; j <= shard.end; j++) {
+                            if (Math.random() < intraConnectivity) {
+                                links.push({ source: i, target: j });
+                            }
+                        }
+                    }
+                }
+
+                // Create inter-shard connections (sparse)
+                for (let i = 0; i < numShards; i++) {
+                    for (let j = i + 1; j < numShards; j++) {
+                        // Select a few nodes from each shard to connect
+                        const shardA = shardBoundaries[i];
+                        const shardB = shardBoundaries[j];
+
+                        // For each node in shard A
+                        for (let nodeA = shardA.start; nodeA <= shardA.end; nodeA++) {
+                            // Try to connect to nodes in shard B with low probability
+                            for (let nodeB = shardB.start; nodeB <= shardB.end; nodeB++) {
+                                if (Math.random() < interConnectivity) {
+                                    links.push({ source: nodeA, target: nodeB });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Ensure the network is connected
+                for (let i = 1; i < numShards; i++) {
+                    const nodeA = shardBoundaries[i-1].start;
+                    const nodeB = shardBoundaries[i].start;
+
+                    // Check if there's already a path between these nodes
+                    const linkExists = links.some(link =>
+                        (link.source === nodeA && link.target === nodeB) ||
+                        (link.source === nodeB && link.target === nodeA)
+                    );
+
+                    if (!linkExists) {
+                        links.push({ source: nodeA, target: nodeB });
                     }
                 }
             }
@@ -688,9 +843,13 @@ export function initApp() {
         const graphType = this.value;
         const verticesInput = document.getElementById('numVertices');
         const gossipPInput = document.getElementById('gossipPContainer');
+        const bipartiteInputs = document.getElementById('bipartiteContainer');
+        const shardedInputs = document.getElementById('shardedContainer');
 
-        // Hide gossip probability by default
+        // Hide all special inputs by default
         gossipPInput.style.display = 'none';
+        bipartiteInputs.style.display = 'none';
+        shardedInputs.style.display = 'none';
 
         // Handle fixed-size graphs
         if (graphType === 'petersen') {
@@ -708,14 +867,40 @@ export function initApp() {
         } else if (graphType === 'icosahedron') {
             verticesInput.value = 12;
             verticesInput.disabled = true;
+        } else if (graphType === 'bipartite') {
+            verticesInput.disabled = true;
+            bipartiteInputs.style.display = 'block';
+            // Calculate total vertices from m and n
+            const m = parseInt(document.getElementById('bipartiteM').value || '3');
+            const n = parseInt(document.getElementById('bipartiteN').value || '3');
+            verticesInput.value = m + n;
         } else {
             verticesInput.disabled = false;
         }
 
-        // Show gossip probability input only for gossip network
+        // Show specific inputs based on graph type
         if (graphType === 'gossip') {
             gossipPInput.style.display = 'block';
+        } else if (graphType === 'sharded') {
+            shardedInputs.style.display = 'block';
         }
+
+        // Update bipartite vertex count when m or n changes
+        document.getElementById('bipartiteM').addEventListener('change', function() {
+            if (graphType === 'bipartite') {
+                const m = parseInt(this.value || '3');
+                const n = parseInt(document.getElementById('bipartiteN').value || '3');
+                verticesInput.value = m + n;
+            }
+        });
+
+        document.getElementById('bipartiteN').addEventListener('change', function() {
+            if (graphType === 'bipartite') {
+                const m = parseInt(document.getElementById('bipartiteM').value || '3');
+                const n = parseInt(this.value || '3');
+                verticesInput.value = m + n;
+            }
+        });
     });
 
     // Initialize the visualization
@@ -840,6 +1025,162 @@ function createGossipNetwork(n, p) {
                     // Edge might already exist, ignore
                 }
             }
+        }
+    }
+
+    return graph;
+}
+
+// Create Bipartite Graph Km,n
+function createBipartiteGraph(m, n) {
+    const graph = new wasm.WasmGraph(m + n);
+
+    // Connect each vertex in set A to each vertex in set B
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            graph.add_edge(i, m + j);
+        }
+    }
+
+    return graph;
+}
+
+// Create Scale-Free Graph using Barabási–Albert model
+function createScaleFreeGraph(n) {
+    if (n < 3) return new wasm.WasmGraph(n);
+
+    const graph = new wasm.WasmGraph(n);
+
+    // Start with a small fully connected network (e.g., a triangle)
+    graph.add_edge(0, 1);
+    graph.add_edge(1, 2);
+    graph.add_edge(2, 0);
+
+    // Preferential attachment process for remaining nodes
+    const m0 = 3; // Number of initial nodes
+    const m = 2;  // Number of edges to add for each new node
+
+    // Calculate initial degrees
+    const degrees = [2, 2, 2]; // Each node in the triangle has 2 edges
+
+    for (let i = m0; i < n; i++) {
+        // Calculate sum of all degrees for probability calculation
+        let degreeSum = degrees.reduce((sum, degree) => sum + degree, 0);
+
+        // Add m edges from new node to existing nodes based on preferential attachment
+        const connected = new Set();
+        for (let e = 0; e < Math.min(m, i); e++) {
+            // Choose a node based on its degree probability
+            let target;
+            do {
+                let rand = Math.random() * degreeSum;
+                target = 0;
+                while (rand > 0 && target < i) {
+                    rand -= degrees[target];
+                    if (rand > 0) target++;
+                }
+            } while (connected.has(target));
+
+            connected.add(target);
+
+            // Add the edge
+            try {
+                graph.add_edge(i, target);
+                // Update degrees
+                degrees[target]++;
+                if (e === 0) {
+                    // Initialize degree for new node
+                    degrees.push(1);
+                } else {
+                    degrees[i]++;
+                }
+            } catch (e) {
+                // Edge might already exist, try again
+                e--;
+            }
+        }
+    }
+
+    return graph;
+}
+
+// Create Sharded Network
+function createShardedNetwork(n, numShards, intraConnectivity, interConnectivity) {
+    if (numShards < 1 || n < numShards) {
+        return new wasm.WasmGraph(n);
+    }
+
+    const graph = new wasm.WasmGraph(n);
+
+    // Determine shard sizes (try to make equal)
+    const shardSizes = [];
+    const baseSize = Math.floor(n / numShards);
+    let remainder = n % numShards;
+
+    for (let i = 0; i < numShards; i++) {
+        shardSizes.push(baseSize + (remainder > 0 ? 1 : 0));
+        remainder--;
+    }
+
+    // Calculate shard boundaries
+    const shardBoundaries = [];
+    let currentIndex = 0;
+    for (let size of shardSizes) {
+        shardBoundaries.push({
+            start: currentIndex,
+            end: currentIndex + size - 1
+        });
+        currentIndex += size;
+    }
+
+    // Create intra-shard connections
+    for (let shard of shardBoundaries) {
+        // Connect each shard internally (densely)
+        for (let i = shard.start; i <= shard.end; i++) {
+            for (let j = i + 1; j <= shard.end; j++) {
+                if (Math.random() < intraConnectivity) {
+                    try {
+                        graph.add_edge(i, j);
+                    } catch (e) {
+                        // Edge might already exist, ignore
+                    }
+                }
+            }
+        }
+    }
+
+    // Create inter-shard connections (sparse)
+    for (let i = 0; i < numShards; i++) {
+        for (let j = i + 1; j < numShards; j++) {
+            // Select a few nodes from each shard to connect
+            const shardA = shardBoundaries[i];
+            const shardB = shardBoundaries[j];
+
+            // For each node in shard A
+            for (let nodeA = shardA.start; nodeA <= shardA.end; nodeA++) {
+                // Try to connect to nodes in shard B with low probability
+                for (let nodeB = shardB.start; nodeB <= shardB.end; nodeB++) {
+                    if (Math.random() < interConnectivity) {
+                        try {
+                            graph.add_edge(nodeA, nodeB);
+                        } catch (e) {
+                            // Edge might already exist, ignore
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Ensure the network is connected
+    for (let i = 1; i < numShards; i++) {
+        const nodeA = shardBoundaries[i-1].start;
+        const nodeB = shardBoundaries[i].start;
+
+        try {
+            graph.add_edge(nodeA, nodeB);
+        } catch (e) {
+            // Edge might already exist, ignore
         }
     }
 
