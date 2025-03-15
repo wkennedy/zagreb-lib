@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zagreb Graph Library - WASM Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .analysis-table td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .analysis-table tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+
+        .analysis-table td:first-child {
+            font-weight: bold;
+            width: 220px;
+        }
+
+        .interpretation {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .edge-controls {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .edge-select {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<h1>Zagreb Graph Library - WASM Demo</h1>
+<p>This demo showcases the Zagreb Graph Library running in WebAssembly. Create different types of graphs and analyze their properties.</p>
+
+<div class="container">
+    <div class="panel">
+        <h2>Create Graph</h2>
+        <div class="form-group">
+            <label for="graphType">Graph Type:</label>
+            <select id="graphType">
+                <option value="custom">Custom (Empty)</option>
+                <option value="complete">Complete Graph</option>
+                <option value="cycle">Cycle Graph</option>
+                <option value="star">Star Graph</option>
+                <option value="petersen">Petersen Graph</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="numVertices">Number of Vertices:</label>
+            <input type="number" id="numVertices" min="2" value="5">
+        </div>
+
+        <button id="createButton">Create Graph</button>
+        <div id="graphStatus" class="status"></div>
+
+        <h3>Add Edges</h3>
+        <div class="form-group">
+            <div class="edge-controls">
+                <div class="edge-select">
+                    <label for="vertex1">From:</label>
+                    <select id="vertex1"></select>
+                </div>
+                <div class="edge-select">
+                    <label for="vertex2">To:</label>
+                    <select id="vertex2"></select>
+                </div>
+                <button id="addEdgeButton">Add Edge</button>
+            </div>
+            <div id="edgeStatus" class="status"></div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Graph Analysis</h2>
+        <p>Analyze the created graph to calculate its Zagreb index and Hamiltonian properties.</p>
+        <button id="analyzeButton" disabled>Analyze Graph</button>
+        <div id="analysisResults"></div>
+    </div>
+</div>
+
+<footer>
+    <p>
+        <small>Powered by the
+            <a href="https://github.com/wkennedy/zagreb-lib" target="_blank">Zagreb Graph Library</a>
+            based on research by Rao Li.
+        </small>
+    </p>
+</footer>
+
+<script type="module">
+    import { initApp } from './index.js';
+    initApp();
+</script>
+</body>
+</html>

@@ -1,7 +1,15 @@
 // zagreb-lib/src/lib.rs
 use std::collections::{HashMap, HashSet};
+use std::fmt;
+
+#[cfg(target_arch = "wasm32")]
+mod wasm;
+
+#[cfg(target_arch = "wasm32")]
+pub use wasm::*;
 
 /// A graph represented as an adjacency list
+#[derive(Clone)]
 pub struct Graph {
     /// Adjacency list representation of the graph
     edges: HashMap<usize, HashSet<usize>>,
@@ -9,6 +17,21 @@ pub struct Graph {
     n_vertices: usize,
     /// Number of edges in the graph
     n_edges: usize,
+}
+
+impl fmt::Debug for Graph {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Graph {{")?;
+        writeln!(f, "  vertices: {},", self.n_vertices)?;
+        writeln!(f, "  edges: {},", self.n_edges)?;
+        writeln!(f, "  adjacency list: {{")?;
+        for v in 0..self.n_vertices {
+            let neighbors: Vec<usize> = self.edges.get(&v).unwrap_or(&HashSet::new()).iter().cloned().collect();
+            writeln!(f, "    {}: {:?},", v, neighbors)?;
+        }
+        writeln!(f, "  }}")?;
+        write!(f, "}}")
+    }
 }
 
 impl Graph {

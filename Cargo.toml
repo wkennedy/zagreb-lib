@@ -9,6 +9,16 @@ repository = "https://github.com/wkennedy/zagreb-lib"
 keywords = ["graph", "network", "hamiltonian", "zagreb", "topology"]
 categories = ["algorithms", "mathematics", "network-programming"]
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2.87"
+js-sys = "0.3.64"
+console_error_panic_hook = { version = "0.1.7" }
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
 
@@ -25,3 +35,6 @@ path = "examples/solana_network.rs"
 [[bench]]
 name = "zagreb_benches"
 harness = false
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Oz", "--enable-mutable-globals"]

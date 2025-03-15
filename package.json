@@ -1,0 +1,21 @@
+{
+  "name": "zagreb-lib-web-example",
+  "version": "0.1.0",
+  "description": "Web example for the Zagreb Graph Library",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "bash build.sh",
+    "clean": "rm -rf dist pkg pkg-node pkg-web target",
+    "test": "wasm-pack test --node",
+    "serve": "cd dist && npx serve",
+    "demo": "npm run build && npm run serve",
+    "prepublish": "npm run clean && npm run build"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
