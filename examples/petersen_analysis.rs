@@ -58,13 +58,13 @@ fn analyze_graph_properties(graph: &Graph) {
     // Check connectivity
     println!("\nConnectivity properties:");
     for k in 1..=5 {
-        println!("{}-connected: {}", k, graph.is_k_connected(k));
+        println!("{}-connected: {}", k, graph.is_k_connected(k, false));
     }
 
     // Check Hamiltonian and traceable properties
     println!("\nHamiltonian properties:");
-    println!("Is likely Hamiltonian: {}", graph.is_likely_hamiltonian());
-    println!("Is likely traceable: {}", graph.is_likely_traceable());
+    println!("Is likely Hamiltonian: {}", graph.is_likely_hamiltonian(false));
+    println!("Is likely traceable: {}", graph.is_likely_traceable(false));
 
     // Calculate independence number approximation
     println!(
