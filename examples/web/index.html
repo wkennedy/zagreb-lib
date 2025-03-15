@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zagreb Graph Library - WASM Demo</title>
+    <title>Zagreb Graph Library</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -180,7 +180,7 @@
     </style>
 </head>
 <body>
-<h1>Zagreb Graph Library - WASM Demo</h1>
+<h1>Zagreb Graph Library</h1>
 <p>This demo showcases the Zagreb Graph Library running in WebAssembly. Create different types of graphs, visualize them, and analyze their properties using the First Zagreb Index.</p>
 
 <div class="panel wide-panel">
@@ -217,12 +217,23 @@
                 <option value="cycle">Cycle Graph</option>
                 <option value="star">Star Graph</option>
                 <option value="petersen">Petersen Graph</option>
+                <option value="cube">Cube Graph (Q3)</option>
+                <option value="tetrahedron">Tetrahedron</option>
+                <option value="octahedron">Octahedron</option>
+                <option value="icosahedron">Icosahedron</option>
+                <option value="gossip">Gossip Network</option>
             </select>
         </div>
 
         <div class="form-group">
             <label for="numVertices">Number of Vertices:</label>
             <input type="number" id="numVertices" min="2" value="5">
+        </div>
+
+        <div id="gossipPContainer" class="form-group" style="display: none;">
+            <label for="gossipP">Connection Probability (0-1):</label>
+            <input type="number" id="gossipP" min="0.1" max="0.9" step="0.1" value="0.3">
+            <small>Higher values create more connected gossip networks</small>
         </div>
 
         <button id="createButton">Create Graph</button>
@@ -264,6 +275,19 @@
     <p style="text-align: center; font-weight: bold;">Z₁(G) = ∑(d²(u)) for all vertices u in G</p>
     <p>Where d(u) is the degree of vertex u (the number of edges connected to it).</p>
     <p>This index is used to analyze graph properties, including Hamiltonicity, which is important for network design and optimization.</p>
+
+    <h3>Graph Types Explanation</h3>
+    <ul>
+        <li><strong>Cube Graph (Q3):</strong> A 3-regular graph with 8 vertices arranged in a cube structure. Every vertex has exactly 3 neighbors.</li>
+        <li><strong>Platonic Solids:</strong> Regular, convex polyhedra with faces of identical regular polygons meeting at each vertex the same number of times.
+            <ul>
+                <li><strong>Tetrahedron:</strong> 4 vertices, each connected to all others (K4).</li>
+                <li><strong>Octahedron:</strong> 6 vertices arranged as two antipodal points connected to a square.</li>
+                <li><strong>Icosahedron:</strong> 12 vertices with 20 triangular faces.</li>
+            </ul>
+        </li>
+        <li><strong>Gossip Network:</strong> Models blockchain validators with a baseline connectivity (cycle) and probabilistic additional connections. Some nodes serve as high-degree coordinators to simulate validator roles.</li>
+    </ul>
 
     <h3>Key Properties</h3>
     <ul>

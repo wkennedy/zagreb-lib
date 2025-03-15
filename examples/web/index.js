@@ -235,6 +235,7 @@ function createGraph() {
     // Get the graph type from UI
     const graphType = document.getElementById('graphType').value;
     const vertices = parseInt(document.getElementById('numVertices').value);
+    const p = parseFloat(document.getElementById('gossipP').value || '0.3');
 
     let graph;
 
@@ -252,6 +253,21 @@ function createGraph() {
                 break;
             case 'petersen':
                 graph = wasm.WasmGraph.create_petersen();
+                break;
+            case 'cube':
+                graph = createCubeGraph();
+                break;
+            case 'tetrahedron':
+                graph = createTetrahedronGraph();
+                break;
+            case 'octahedron':
+                graph = createOctahedronGraph();
+                break;
+            case 'icosahedron':
+                graph = createIcosahedronGraph();
+                break;
+            case 'gossip':
+                graph = createGossipNetwork(vertices, p);
                 break;
             default:
                 // Create custom graph
@@ -342,6 +358,116 @@ function createGraphDataFromScratch(graph) {
             links.push({ source: 9, target: 6 });
             links.push({ source: 6, target: 8 });
             links.push({ source: 8, target: 5 });
+            break;
+
+        case 'cube':
+            // 8 vertices forming a cube (Q3)
+            // Bottom face
+            links.push({ source: 0, target: 1 });
+            links.push({ source: 1, target: 2 });
+            links.push({ source: 2, target: 3 });
+            links.push({ source: 3, target: 0 });
+
+            // Top face
+            links.push({ source: 4, target: 5 });
+            links.push({ source: 5, target: 6 });
+            links.push({ source: 6, target: 7 });
+            links.push({ source: 7, target: 4 });
+
+            // Connecting edges
+            links.push({ source: 0, target: 4 });
+            links.push({ source: 1, target: 5 });
+            links.push({ source: 2, target: 6 });
+            links.push({ source: 3, target: 7 });
+            break;
+
+        case 'tetrahedron':
+            // 4 vertices forming a tetrahedron
+            links.push({ source: 0, target: 1 });
+            links.push({ source: 0, target: 2 });
+            links.push({ source: 0, target: 3 });
+            links.push({ source: 1, target: 2 });
+            links.push({ source: 1, target: 3 });
+            links.push({ source: 2, target: 3 });
+            break;
+
+        case 'octahedron':
+            // 6 vertices forming an octahedron
+            // Connect opposite poles to all equator vertices
+            links.push({ source: 0, target: 2 });
+            links.push({ source: 0, target: 3 });
+            links.push({ source: 0, target: 4 });
+            links.push({ source: 0, target: 5 });
+
+            links.push({ source: 1, target: 2 });
+            links.push({ source: 1, target: 3 });
+            links.push({ source: 1, target: 4 });
+            links.push({ source: 1, target: 5 });
+
+            // Connect equator in a cycle
+            links.push({ source: 2, target: 3 });
+            links.push({ source: 3, target: 4 });
+            links.push({ source: 4, target: 5 });
+            links.push({ source: 5, target: 2 });
+            break;
+
+        case 'icosahedron':
+            // 12 vertices forming an icosahedron
+            // Create a pentagonal antiprism
+            for (let i = 0; i < 5; i++) {
+                // Connect top pentagon
+                links.push({ source: i, target: (i + 1) % 5 });
+                // Connect bottom pentagon
+                links.push({ source: i + 5, target: ((i + 1) % 5) + 5 });
+                // Connect top to bottom
+                links.push({ source: i, target: i + 5 });
+                links.push({ source: i, target: ((i + 1) % 5) + 5 });
+            }
+
+            // Connect to poles
+            for (let i = 0; i < 5; i++) {
+                links.push({ source: 10, target: i });
+                links.push({ source: 11, target: i + 5 });
+            }
+            break;
+
+        case 'gossip':
+            // A partially connected network with structured gossip protocol paths
+            // First create a base connectivity structure (e.g., a cycle for reliability)
+            for (let i = 0; i < nodes.length; i++) {
+                links.push({ source: i, target: (i + 1) % nodes.length });
+            }
+
+            // Add "long-range" connections based on probability
+            const p = parseFloat(document.getElementById('gossipP').value || '0.3');
+
+            // Add additional connections with some probability
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 2; j < nodes.length; j++) {
+                    if (j !== (i + 1) % nodes.length && j !== i && Math.random() < p) {
+                        links.push({ source: i, target: j });
+                    }
+                }
+            }
+
+            // Ensure a small number of high-degree "coordinator" nodes
+            const numCoordinators = Math.max(1, Math.floor(nodes.length * 0.1));
+            for (let c = 0; c < numCoordinators; c++) {
+                const coordinator = Math.floor(Math.random() * nodes.length);
+                for (let i = 0; i < nodes.length; i++) {
+                    if (i !== coordinator && Math.random() < 0.7) {
+                        // Check if this link already exists
+                        const linkExists = links.some(link =>
+                            (link.source === coordinator && link.target === i) ||
+                            (link.source === i && link.target === coordinator)
+                        );
+
+                        if (!linkExists) {
+                            links.push({ source: coordinator, target: i });
+                        }
+                    }
+                }
+            }
             break;
 
         default:
@@ -561,18 +687,163 @@ export function initApp() {
     document.getElementById('graphType').addEventListener('change', function() {
         const graphType = this.value;
         const verticesInput = document.getElementById('numVertices');
+        const gossipPInput = document.getElementById('gossipPContainer');
 
+        // Hide gossip probability by default
+        gossipPInput.style.display = 'none';
+
+        // Handle fixed-size graphs
         if (graphType === 'petersen') {
-            // Petersen graph always has 10 vertices
             verticesInput.value = 10;
+            verticesInput.disabled = true;
+        } else if (graphType === 'cube') {
+            verticesInput.value = 8;
+            verticesInput.disabled = true;
+        } else if (graphType === 'tetrahedron') {
+            verticesInput.value = 4;
+            verticesInput.disabled = true;
+        } else if (graphType === 'octahedron') {
+            verticesInput.value = 6;
+            verticesInput.disabled = true;
+        } else if (graphType === 'icosahedron') {
+            verticesInput.value = 12;
             verticesInput.disabled = true;
         } else {
             verticesInput.disabled = false;
+        }
+
+        // Show gossip probability input only for gossip network
+        if (graphType === 'gossip') {
+            gossipPInput.style.display = 'block';
         }
     });
 
     // Initialize the visualization
     initVisualization();
+}
+
+// Create Cube Graph (Q3)
+function createCubeGraph() {
+    const graph = new wasm.WasmGraph(8);
+
+    // Bottom face
+    graph.add_edge(0, 1);
+    graph.add_edge(1, 2);
+    graph.add_edge(2, 3);
+    graph.add_edge(3, 0);
+
+    // Top face
+    graph.add_edge(4, 5);
+    graph.add_edge(5, 6);
+    graph.add_edge(6, 7);
+    graph.add_edge(7, 4);
+
+    // Connecting edges
+    graph.add_edge(0, 4);
+    graph.add_edge(1, 5);
+    graph.add_edge(2, 6);
+    graph.add_edge(3, 7);
+
+    return graph;
+}
+
+// Create Tetrahedron Graph
+function createTetrahedronGraph() {
+    const graph = new wasm.WasmGraph(4);
+
+    // Connect all vertices to each other (K4)
+    graph.add_edge(0, 1);
+    graph.add_edge(0, 2);
+    graph.add_edge(0, 3);
+    graph.add_edge(1, 2);
+    graph.add_edge(1, 3);
+    graph.add_edge(2, 3);
+
+    return graph;
+}
+
+// Create Octahedron Graph
+function createOctahedronGraph() {
+    const graph = new wasm.WasmGraph(6);
+
+    // Connect opposite poles to all equator vertices
+    graph.add_edge(0, 2);
+    graph.add_edge(0, 3);
+    graph.add_edge(0, 4);
+    graph.add_edge(0, 5);
+
+    graph.add_edge(1, 2);
+    graph.add_edge(1, 3);
+    graph.add_edge(1, 4);
+    graph.add_edge(1, 5);
+
+    // Connect equator in a cycle
+    graph.add_edge(2, 3);
+    graph.add_edge(3, 4);
+    graph.add_edge(4, 5);
+    graph.add_edge(5, 2);
+
+    return graph;
+}
+
+// Create Icosahedron Graph
+function createIcosahedronGraph() {
+    const graph = new wasm.WasmGraph(12);
+
+    // Create a pentagonal antiprism
+    for (let i = 0; i < 5; i++) {
+        // Connect top pentagon
+        graph.add_edge(i, (i + 1) % 5);
+        // Connect bottom pentagon
+        graph.add_edge(i + 5, ((i + 1) % 5) + 5);
+        // Connect top to bottom
+        graph.add_edge(i, i + 5);
+        graph.add_edge(i, ((i + 1) % 5) + 5);
+    }
+
+    // Connect to poles
+    for (let i = 0; i < 5; i++) {
+        graph.add_edge(10, i);
+        graph.add_edge(11, i + 5);
+    }
+
+    return graph;
+}
+
+// Create Gossip Network
+function createGossipNetwork(n, p) {
+    const graph = new wasm.WasmGraph(n);
+
+    // First create a base connectivity structure (e.g., a cycle for reliability)
+    for (let i = 0; i < n; i++) {
+        graph.add_edge(i, (i + 1) % n);
+    }
+
+    // Add "long-range" connections based on probability
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 2; j < n; j++) {
+            if (j !== (i + 1) % n && j !== i && Math.random() < p) {
+                graph.add_edge(i, j);
+            }
+        }
+    }
+
+    // Ensure a small number of high-degree "coordinator" nodes
+    const numCoordinators = Math.max(1, Math.floor(n * 0.1));
+    for (let c = 0; c < numCoordinators; c++) {
+        const coordinator = Math.floor(Math.random() * n);
+        for (let i = 0; i < n; i++) {
+            if (i !== coordinator && Math.random() < 0.7) {
+                try {
+                    graph.add_edge(coordinator, i);
+                } catch (e) {
+                    // Edge might already exist, ignore
+                }
+            }
+        }
+    }
+
+    return graph;
 }
 
 // Set up the application
