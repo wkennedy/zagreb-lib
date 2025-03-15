@@ -1,5 +1,7 @@
 # Zagreb Graph Library
 
+[![Rust](https://github.com/wkennedy/zagreb-lib/actions/workflows/rust.yml/badge.svg)](https://github.com/wkennedy/zagreb-lib/actions/workflows/rust.yml)
+
 A Rust implementation of graph analysis tools based on the First Zagreb Index and its relationship with Hamiltonian properties of graphs, as described in the paper "The First Zagreb Index and Some Hamiltonian Properties of Graphs" by Rao Li (Mathematics 2024, 12, 3902).
 
 ## Overview
