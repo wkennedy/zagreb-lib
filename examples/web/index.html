@@ -4,202 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zagreb Graph Library</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        h1, h2, h3 {
-            color: #2c3e50;
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .panel {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .wide-panel {
-            flex-basis: 100%;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        select, input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-        }
-
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background: #2980b9;
-        }
-
-        button:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        .status {
-            margin-top: 10px;
-            font-style: italic;
-        }
-
-        .analysis-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .analysis-table td {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .analysis-table tr:nth-child(even) {
-            background-color: #f5f5f5;
-        }
-
-        .analysis-table td:first-child {
-            font-weight: bold;
-            width: 220px;
-        }
-
-        .interpretation {
-            background: #e8f4f8;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
-        .edge-controls {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-        }
-
-        .edge-select {
-            flex: 1;
-        }
-
-        #graphVisualization {
-            width: 100%;
-            height: 400px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .graph-control-panel {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .graph-info {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .graph-actions {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .visualization-legend {
-            margin-top: 10px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            display: inline-block;
-            border-radius: 50%;
-        }
-
-        .legend-min-degree {
-            border: 2px solid #ffc107;
-        }
-
-        .legend-max-degree {
-            border: 2px solid #28a745;
-        }
-
-        @media (max-width: 768px) {
-            .container, .graph-control-panel {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
 <h1>Zagreb Graph Library</h1>
-<p>This demo showcases the Zagreb Graph Library running in WebAssembly. Create different types of graphs, visualize them, and analyze their properties using the First Zagreb Index.</p>
+<p>This demo showcases the Zagreb Graph Library running in WebAssembly. Create different types of graphs, visualize
+    them, and analyze their properties using the First Zagreb Index.</p>
 
 <div class="panel wide-panel">
     <h2>Graph Visualization</h2>
     <div id="graphVisualization"></div>
     <div class="visualization-legend">
-        <div class="legend-item">
+        <div class="legend-item" title="Vertices with fewer connections to other vertices in the graph">
             <div class="legend-color" style="background-color: #4575b4;"></div>
             <span>Low Degree</span>
         </div>
-        <div class="legend-item">
+        <div class="legend-item" title="Vertices with more connections to other vertices in the graph">
             <div class="legend-color" style="background-color: #d73027;"></div>
             <span>High Degree</span>
         </div>
-        <div class="legend-item">
+        <div class="legend-item"
+             title="Vertices with the smallest number of connections in the graph (potential bottlenecks)">
             <span class="legend-color legend-min-degree"></span>
             <span>Minimum Degree</span>
         </div>
-        <div class="legend-item">
+        <div class="legend-item" title="Vertices with the largest number of connections in the graph (network hubs)">
             <span class="legend-color legend-max-degree"></span>
             <span>Maximum Degree</span>
         </div>
@@ -259,81 +88,97 @@
             <input type="number" id="interConnectivity" min="0.05" max="0.5" step="0.05" value="0.2">
             <small>Controls how densely connected shards are internally and between each other</small>
         </div>
-            <button id="createButton">Create Graph</button>
-            <div id="graphStatus" class="status"></div>
-        </div>
+        <button id="createButton">Create Graph</button>
+        <div id="graphStatus" class="status"></div>
+    </div>
 
-        <div class="graph-actions panel">
-            <h2>Add Edges</h2>
-            <div class="form-group">
-                <div class="edge-controls">
-                    <div class="edge-select">
-                        <label for="vertex1">From:</label>
-                        <select id="vertex1"></select>
-                    </div>
-                    <div class="edge-select">
-                        <label for="vertex2">To:</label>
-                        <select id="vertex2"></select>
-                    </div>
+    <div class="graph-actions panel">
+        <h2>Add Edges</h2>
+        <div class="form-group">
+            <div class="edge-controls">
+                <div class="edge-select">
+                    <label for="vertex1">From:</label>
+                    <select id="vertex1"></select>
                 </div>
-                <button id="addEdgeButton">Add Edge</button>
-                <div id="edgeStatus" class="status"></div>
+                <div class="edge-select">
+                    <label for="vertex2">To:</label>
+                    <select id="vertex2"></select>
+                </div>
             </div>
-
-            <h3>Analyze Graph</h3>
-            <p>Calculate the Zagreb index and determine Hamiltonian properties.</p>
-            <button id="analyzeButton" disabled>Analyze Graph</button>
+            <button id="addEdgeButton">Add Edge</button>
+            <div id="edgeStatus" class="status"></div>
         </div>
+
+        <h3>Analyze Graph</h3>
+        <p>Calculate the Zagreb index and determine Hamiltonian properties.</p>
+        <button id="analyzeButton" disabled>Analyze Graph</button>
     </div>
+</div>
 
-    <div class="panel wide-panel">
-        <div id="analysisResults">
-            <p>Create a graph and click "Analyze Graph" to see the results.</p>
-        </div>
+<div class="panel wide-panel">
+    <div id="analysisResults">
+        <p>Create a graph and click "Analyze Graph" to see the results.</p>
     </div>
+</div>
 
-    <div class="panel wide-panel">
-        <h2>About the Zagreb Index</h2>
-        <p>The First Zagreb Index of a graph G is defined as:</p>
-        <p style="text-align: center; font-weight: bold;">Z₁(G) = ∑(d²(u)) for all vertices u in G</p>
-        <p>Where d(u) is the degree of vertex u (the number of edges connected to it).</p>
-        <p>This index is used to analyze graph properties, including Hamiltonicity, which is important for network design and optimization.</p>
+<div class="panel wide-panel">
+    <h2>About the Zagreb Index</h2>
+    <p>The First Zagreb Index of a graph G is defined as:</p>
+    <p style="text-align: center; font-weight: bold;">Z₁(G) = ∑(d²(u)) for all vertices u in G</p>
+    <p>Where d(u) is the degree of vertex u (the number of edges connected to it).</p>
+    <p>This index is used to analyze graph properties, including Hamiltonicity, which is important for network design
+        and optimization.</p>
 
-        <h3>Graph Types Explanation</h3>
-        <ul>
-            <li><strong>Cube Graph (Q3):</strong> A 3-regular graph with 8 vertices arranged in a cube structure. Every vertex has exactly 3 neighbors.</li>
-            <li><strong>Platonic Solids:</strong> Regular, convex polyhedra with faces of identical regular polygons meeting at each vertex the same number of times.
-                <ul>
-                    <li><strong>Tetrahedron:</strong> 4 vertices, each connected to all others (K4).</li>
-                    <li><strong>Octahedron:</strong> 6 vertices arranged as two antipodal points connected to a square.</li>
-                    <li><strong>Icosahedron:</strong> 12 vertices with 20 triangular faces.</li>
-                </ul>
-            </li>
-            <li><strong>Bipartite Graph (Km,n):</strong> A complete bipartite graph with two disjoint sets of vertices (m and n), where every vertex in the first set is connected to every vertex in the second set.</li>
-            <li><strong>Scale-Free Graph:</strong> Network with power-law degree distribution, where a small number of nodes have many connections while most nodes have only a few. Common in natural and human-made systems including the internet and blockchain networks.</li>
-            <li><strong>Gossip Network:</strong> Models blockchain validators with a baseline connectivity (cycle) and probabilistic additional connections. Some nodes serve as high-degree coordinators to simulate validator roles.</li>
-            <li><strong>Sharded Network:</strong> Represents a blockchain system with multiple shards (subgraphs), where connections within shards are dense but connections between shards are sparse. Models the topology of sharded blockchain architectures.</li>
-        </ul>
+    <h3>Graph Types Explanation</h3>
+    <ul>
+        <li><strong>Cube Graph (Q3):</strong> A 3-regular graph with 8 vertices arranged in a cube structure. Every
+            vertex has exactly 3 neighbors.
+        </li>
+        <li><strong>Platonic Solids:</strong> Regular, convex polyhedra with faces of identical regular polygons meeting
+            at each vertex the same number of times.
+            <ul>
+                <li><strong>Tetrahedron:</strong> 4 vertices, each connected to all others (K4).</li>
+                <li><strong>Octahedron:</strong> 6 vertices arranged as two antipodal points connected to a square.</li>
+                <li><strong>Icosahedron:</strong> 12 vertices with 20 triangular faces.</li>
+            </ul>
+        </li>
+        <li><strong>Bipartite Graph (Km,n):</strong> A complete bipartite graph with two disjoint sets of vertices (m
+            and n), where every vertex in the first set is connected to every vertex in the second set.
+        </li>
+        <li><strong>Scale-Free Graph:</strong> Network with power-law degree distribution, where a small number of nodes
+            have many connections while most nodes have only a few. Common in natural and human-made systems including
+            the internet and blockchain networks.
+        </li>
+        <li><strong>Gossip Network:</strong> Models blockchain validators with a baseline connectivity (cycle) and
+            probabilistic additional connections. Some nodes serve as high-degree coordinators to simulate validator
+            roles.
+        </li>
+        <li><strong>Sharded Network:</strong> Represents a blockchain system with multiple shards (subgraphs), where
+            connections within shards are dense but connections between shards are sparse. Models the topology of
+            sharded blockchain architectures.
+        </li>
+    </ul>
 
-        <h3>Key Properties</h3>
-        <ul>
-            <li><strong>Hamiltonian Graph:</strong> Contains a cycle that visits every vertex exactly once</li>
-            <li><strong>Traceable Graph:</strong> Contains a path that visits every vertex exactly once</li>
-            <li><strong>k-Connected Graph:</strong> Remains connected even after removing any k-1 vertices</li>
-        </ul>
-    </div>
+    <h3>Key Properties</h3>
+    <ul>
+        <li><strong>Hamiltonian Graph:</strong> Contains a cycle that visits every vertex exactly once</li>
+        <li><strong>Traceable Graph:</strong> Contains a path that visits every vertex exactly once</li>
+        <li><strong>k-Connected Graph:</strong> Remains connected even after removing any k-1 vertices</li>
+    </ul>
+</div>
 
-    <footer>
-        <p>
-            <small>Powered by the
-                <a href="https://github.com/wkennedy/zagreb-lib" target="_blank">Zagreb Graph Library</a>
-                based on research by Rao Li.
-            </small>
-        </p>
-    </footer>
+<footer>
+    <p>
+        <small>Powered by the
+            <a href="https://github.com/wkennedy/zagreb-lib" target="_blank">Zagreb Graph Library</a>
+            based on research by Rao Li.
+        </small>
+    </p>
+</footer>
 
 <script type="module">
-    import { initApp } from './index.js';
+    import {initApp} from './index.js';
+
     initApp();
 </script>
 </body>

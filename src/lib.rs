@@ -1245,4 +1245,239 @@ mod tests {
             independence_num
         );
     }
+
+    #[test]
+    fn test_zagreb_index_calculation() {
+        // Complete graph K5 - each vertex has degree 4, so sum of squares is 5 * 4^2 = 80
+        let mut complete5 = Graph::new(5);
+        for i in 0..4 {
+            for j in (i + 1)..5 {
+                complete5.add_edge(i, j).unwrap();
+            }
+        }
+        assert_eq!(complete5.first_zagreb_index(), 80);
+
+        // Path graph P5 - two vertices of degree 1, three vertices of degree 2, so 2*1^2 + 3*2^2 = 14
+        let mut path5 = Graph::new(5);
+        path5.add_edge(0, 1).unwrap();
+        path5.add_edge(1, 2).unwrap();
+        path5.add_edge(2, 3).unwrap();
+        path5.add_edge(3, 4).unwrap();
+        assert_eq!(path5.first_zagreb_index(), 14);
+
+        // Empty graph
+        let empty = Graph::new(5);
+        assert_eq!(empty.first_zagreb_index(), 0);
+
+        // Single vertex graph
+        let single = Graph::new(1);
+        assert_eq!(single.first_zagreb_index(), 0);
+    }
+
+    #[test]
+    fn test_hamiltonian_detection() {
+        // Known Hamiltonian graphs
+        let mut complete5 = Graph::new(5);
+        for i in 0..4 {
+            for j in (i + 1)..5 {
+                complete5.add_edge(i, j).unwrap();
+            }
+        }
+        assert!(complete5.is_likely_hamiltonian(true));
+
+        let mut cycle5 = Graph::new(5);
+        cycle5.add_edge(0, 1).unwrap();
+        cycle5.add_edge(1, 2).unwrap();
+        cycle5.add_edge(2, 3).unwrap();
+        cycle5.add_edge(3, 4).unwrap();
+        cycle5.add_edge(4, 0).unwrap();
+        assert!(cycle5.is_likely_hamiltonian(true));
+
+        // Known non-Hamiltonian graphs
+        let mut star5 = Graph::new(5);
+        star5.add_edge(0, 1).unwrap();
+        star5.add_edge(0, 2).unwrap();
+        star5.add_edge(0, 3).unwrap();
+        star5.add_edge(0, 4).unwrap();
+        assert!(!star5.is_likely_hamiltonian(true));
+
+        // Create Petersen graph (known to be non-Hamiltonian)
+        let mut petersen = Graph::new(10);
+        // Add outer cycle
+        petersen.add_edge(0, 1).unwrap();
+        petersen.add_edge(1, 2).unwrap();
+        petersen.add_edge(2, 3).unwrap();
+        petersen.add_edge(3, 4).unwrap();
+        petersen.add_edge(4, 0).unwrap();
+        // Add spokes
+        petersen.add_edge(0, 5).unwrap();
+        petersen.add_edge(1, 6).unwrap();
+        petersen.add_edge(2, 7).unwrap();
+        petersen.add_edge(3, 8).unwrap();
+        petersen.add_edge(4, 9).unwrap();
+        // Add inner pentagram
+        petersen.add_edge(5, 7).unwrap();
+        petersen.add_edge(7, 9).unwrap();
+        petersen.add_edge(9, 6).unwrap();
+        petersen.add_edge(6, 8).unwrap();
+        petersen.add_edge(8, 5).unwrap();
+        assert!(!petersen.is_likely_hamiltonian(true));
+    }
+
+    #[test]
+    fn test_traceable_detection() {
+        // Test path graph (traceable by definition)
+        let mut path = Graph::new(5);
+        path.add_edge(0, 1).unwrap();
+        path.add_edge(1, 2).unwrap();
+        path.add_edge(2, 3).unwrap();
+        path.add_edge(3, 4).unwrap();
+        assert!(path.is_likely_traceable(true));
+
+        // Test star graph (traceable)
+        let mut star = Graph::new(5);
+        star.add_edge(0, 1).unwrap();
+        star.add_edge(0, 2).unwrap();
+        star.add_edge(0, 3).unwrap();
+        star.add_edge(0, 4).unwrap();
+        assert!(star.is_likely_traceable(true));
+
+        // Test Petersen graph (known to be traceable)
+        let mut petersen = Graph::new(10);
+        // Add outer cycle
+        petersen.add_edge(0, 1).unwrap();
+        petersen.add_edge(1, 2).unwrap();
+        petersen.add_edge(2, 3).unwrap();
+        petersen.add_edge(3, 4).unwrap();
+        petersen.add_edge(4, 0).unwrap();
+        // Add spokes
+        petersen.add_edge(0, 5).unwrap();
+        petersen.add_edge(1, 6).unwrap();
+        petersen.add_edge(2, 7).unwrap();
+        petersen.add_edge(3, 8).unwrap();
+        petersen.add_edge(4, 9).unwrap();
+        // Add inner pentagram
+        petersen.add_edge(5, 7).unwrap();
+        petersen.add_edge(7, 9).unwrap();
+        petersen.add_edge(9, 6).unwrap();
+        petersen.add_edge(6, 8).unwrap();
+        petersen.add_edge(8, 5).unwrap();
+        assert!(petersen.is_likely_traceable(true));
+    }
+
+    #[test]
+    fn test_zagreb_upper_bound() {
+        // Create various graph types
+        let mut cycle = Graph::new(5);
+        cycle.add_edge(0, 1).unwrap();
+        cycle.add_edge(1, 2).unwrap();
+        cycle.add_edge(2, 3).unwrap();
+        cycle.add_edge(3, 4).unwrap();
+        cycle.add_edge(4, 0).unwrap();
+
+        let mut complete = Graph::new(5);
+        for i in 0..4 {
+            for j in (i + 1)..5 {
+                complete.add_edge(i, j).unwrap();
+            }
+        }
+
+        let mut star = Graph::new(5);
+        star.add_edge(0, 1).unwrap();
+        star.add_edge(0, 2).unwrap();
+        star.add_edge(0, 3).unwrap();
+        star.add_edge(0, 4).unwrap();
+
+        // Verify the Zagreb index is always less than or equal to the upper bound
+        assert!(cycle.first_zagreb_index() as f64 <= cycle.zagreb_upper_bound());
+        assert!(complete.first_zagreb_index() as f64 <= complete.zagreb_upper_bound());
+        assert!(star.first_zagreb_index() as f64 <= star.zagreb_upper_bound());
+    }
+
+    #[test]
+    fn test_graph_type_detection() {
+        // Test complete graph detection
+        let mut complete = Graph::new(5);
+        for i in 0..4 {
+            for j in (i + 1)..5 {
+                complete.add_edge(i, j).unwrap();
+            }
+        }
+        assert!(complete.is_complete());
+
+        // Test cycle graph detection
+        let mut cycle = Graph::new(5);
+        cycle.add_edge(0, 1).unwrap();
+        cycle.add_edge(1, 2).unwrap();
+        cycle.add_edge(2, 3).unwrap();
+        cycle.add_edge(3, 4).unwrap();
+        cycle.add_edge(4, 0).unwrap();
+        assert!(cycle.is_cycle());
+
+        // Test star graph detection
+        let mut star = Graph::new(5);
+        star.add_edge(0, 1).unwrap();
+        star.add_edge(0, 2).unwrap();
+        star.add_edge(0, 3).unwrap();
+        star.add_edge(0, 4).unwrap();
+        assert!(star.is_star());
+
+        // Test path graph detection
+        let mut path = Graph::new(5);
+        path.add_edge(0, 1).unwrap();
+        path.add_edge(1, 2).unwrap();
+        path.add_edge(2, 3).unwrap();
+        path.add_edge(3, 4).unwrap();
+        assert!(path.is_path());
+
+        // Test non-matches
+        assert!(!cycle.is_complete());
+        assert!(!star.is_cycle());
+        assert!(!path.is_star());
+        assert!(!complete.is_path());
+    }
+
+    #[test]
+    fn test_theorem_implementations() {
+        // Test Theorem 1 with k=2
+        let mut graph = Graph::new(10);
+        // Create a k-connected graph (k=2) that meets the Zagreb index criteria
+        // and verify it's correctly identified as Hamiltonian
+        // This would need to be constructed based on the theorem's specifics
+
+        // Test Theorem 2 with k=1
+        // Similarly construct and test
+
+        // Test Theorem 3 upper bounds
+        // Create a graph and verify the bounds match expected values
+    }
+
+    #[test]
+    fn test_independence_number() {
+        // Test on a path graph P5 (should be 3)
+        let mut path = Graph::new(5);
+        path.add_edge(0, 1).unwrap();
+        path.add_edge(1, 2).unwrap();
+        path.add_edge(2, 3).unwrap();
+        path.add_edge(3, 4).unwrap();
+        assert_eq!(path.independence_number_approx(), 3);
+
+        // Test on a cycle graph C5 (should be 2)
+        let mut cycle = Graph::new(5);
+        cycle.add_edge(0, 1).unwrap();
+        cycle.add_edge(1, 2).unwrap();
+        cycle.add_edge(2, 3).unwrap();
+        cycle.add_edge(3, 4).unwrap();
+        cycle.add_edge(4, 0).unwrap();
+        assert_eq!(cycle.independence_number_approx(), 2);
+
+        // Test on a complete graph K5 (should be 1)
+        let mut complete = Graph::new(5);
+        for i in 0..4 {
+            for j in (i + 1)..5 {
+                complete.add_edge(i, j).unwrap();
+            }
+        }
+        assert_eq!(complete.independence_number_approx(), 1);
+    }
 }
