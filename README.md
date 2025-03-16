@@ -4,6 +4,8 @@
 
 A Rust implementation of graph analysis tools based on the First Zagreb Index and its relationship with Hamiltonian properties of graphs, as described in the paper "The First Zagreb Index and Some Hamiltonian Properties of Graphs" by Rao Li (Mathematics 2024, 12, 3902, published December 11, 2024).
 
+See it in use here: [DEMO](https://wkennedy.github.io/zagreb-lib/)
+
 ## Overview
 
 This library provides tools to analyze graphs using the First Zagreb Index and determine whether they are likely to possess Hamiltonian properties. This is particularly useful for analyzing network topologies in distributed systems like blockchain networks.
