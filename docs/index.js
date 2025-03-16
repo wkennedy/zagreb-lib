@@ -300,7 +300,7 @@ function createGraph() {
         updateVisualization();
 
         // Update the UI
-        document.getElementById('graphStatus').textContent = `Created ${graphType} graph with ${graph.vertex_count()} vertices`;
+        document.getElementById('graphStatus').textContent = `Created ${graphType} graph with ${graph.vertex_count()} vertices. You can now analyze the graph.`;
         document.getElementById('analyzeButton').disabled = false;
 
         // Update the edge inputs dropdown options
