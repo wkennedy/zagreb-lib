@@ -1,0 +1,31 @@
+{
+  "name": "zagreb-lib",
+  "type": "module",
+  "collaborators": [
+    "Will Kennedy"
+  ],
+  "description": "A Rust library for analyzing graph properties using the Zagreb index and Hamiltonian criteria",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wkennedy/zagreb-lib"
+  },
+  "files": [
+    "zagreb_lib_bg.wasm",
+    "zagreb_lib.js",
+    "zagreb_lib.d.ts"
+  ],
+  "main": "zagreb_lib.js",
+  "types": "zagreb_lib.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ],
+  "keywords": [
+    "graph",
+    "network",
+    "hamiltonian",
+    "zagreb",
+    "topology"
+  ]
+}
