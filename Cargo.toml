@@ -13,10 +13,11 @@ categories = ["algorithms", "mathematics", "network-programming"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-wasm-bindgen = "0.2.87"
+wasm-bindgen = "0.2.100"
+js-sys = "0.3.64"
 console_error_panic_hook = { version = "0.1.7" }
 serde = { version = "1.0", features = ["derive"] }
-rand = "0.9.0"
+serde-wasm-bindgen = "0.6"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
@@ -28,8 +29,8 @@ lto = true
 codegen-units = 1
 
 [[example]]
-name = "solana_network"
-path = "examples/solana_network.rs"
+name = "petersen_analysis"
+path = "examples/petersen_analysis.rs"
 
 [[bench]]
 name = "zagreb_benches"

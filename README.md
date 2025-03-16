@@ -74,7 +74,7 @@ fn main() {
 
 ### Analyzing Network Topology
 
-This library is particularly useful for analyzing network topologies in distributed systems such as blockchain networks. See the `examples/solana_network.rs` file for a complete example of analyzing a simulated Solana validator network.
+This library is particularly useful for analyzing network topologies in distributed systems such as blockchain networks.
 
 ## Applications for Blockchain Networks
 
@@ -82,35 +82,13 @@ This library is particularly useful for:
 
 1. **Optimizing validator communication networks** - Ensuring that validator nodes are connected in ways that minimize latency and maximize throughput.
 
-2. **Leader selection and rotation** - In proof-of-stake networks like Solana, finding efficient sequences for leader rotation.
+2. **Leader selection and rotation** - In proof-of-stake networks, finding efficient sequences for leader rotation.
 
 3. **Network resilience planning** - Identifying potential bottlenecks or single points of failure in the network.
 
 4. **Gossip protocol optimization** - Finding efficient paths for information propagation throughout the network.
 
 5. **Sharding efficiency** - Designing optimal cross-shard communication patterns.
-
-## Example: Solana Network Analysis
-
-```rust
-use zagreb_lib::Graph;
-
-fn main() {
-    // Create a graph representing Solana validator connections
-    let mut graph = Graph::new(number_of_validators);
-    
-    // Add edges based on validator connections
-    // ...
-    
-    // Analyze the network
-    let zagreb_index = graph.first_zagreb_index();
-    let is_hamiltonian = graph.is_likely_hamiltonian();
-    let is_traceable = graph.is_likely_traceable();
-    
-    // Make recommendations for network improvements
-    // ...
-}
-```
 
 ## Academic Background
 
